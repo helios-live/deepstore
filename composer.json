@@ -1,0 +1,22 @@
+{
+  "name": "helios-live/deepstore",
+  "description": "Database + storage backup to tar.gz with Forge notifications",
+  "type": "library",
+  "license": "MIT",
+  "require": {
+    "php": "^8.2",
+    "illuminate/support": "^10.0|^11.0|^12.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "HeliosLive\\\\Deepstore\\\\": "src/"
+    }
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "HeliosLive\\\\Deepstore\\\\DeepstoreServiceProvider"
+      ]
+    }
+  }
+}
