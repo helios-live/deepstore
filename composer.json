@@ -9,13 +9,13 @@
   },
   "autoload": {
     "psr-4": {
-      "HeliosLive\\\\Deepstore\\\\": "src/"
+      "HeliosLive\\Deepstore\\": "src/"
     }
   },
   "extra": {
     "laravel": {
       "providers": [
-        "HeliosLive\\\\Deepstore\\\\DeepstoreServiceProvider"
+        "HeliosLive\\Deepstore\\DeepstoreServiceProvider"
       ]
     }
   }
