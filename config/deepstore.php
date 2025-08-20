@@ -78,4 +78,21 @@ return [
 
     'forge_webhook_url'    => env('DEEPSTORE_FORGE_WEBHOOK_URL'),
 
+    /*|--------------------------------------------------------------------------
+    | Miscellaneous Settings
+    |--------------------------------------------------------------------------
+    |
+    | These settings control the date format used for archive names and the
+    | prefix for archive files.  The retention policy defines how many
+    | archives are kept in the backup directory and whether the first of
+    | each month is preserved.
+    |*/
+
+    'date_format' => 'Y-m-d',
+    'archive_prefix' => 'archive_',
+
+    'retention' => [
+        'latest' => 7,
+        'keep_first_of_month' => true,
+    ],
 ];

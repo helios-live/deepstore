@@ -1,27 +1,31 @@
 # Deepstore
 
-**Database + storage backups to compressed `tar.gz`, with optional off-site copy and Forge-style notifications.**
+**Database + storage backups to compressed `tar.gz`, optional off-site copy via SCP, smart retention, and Forge-style notifications.**
 
 ---
 
 ## Features
 
 - **`deepstore:store`** Artisan command
-- Generates a single **`archive_yyyy-mm-dd.tar.gz`** that contains
+- Generates a single **`archive_YYYY-MM-DD.tar.gz`** containing:
     - Full MySQL dump (routines included)
     - Filtered copy of the Laravel `storage` directory
-- Fine-grained **include / exclude** filters for directories, files and database tables
-- Optional **SCP transfer** to a remote server (with automatic retries)
-- **Forge / CI webhook** on success or failure
+- **Filters**: include/exclude directories, files, and DB tables
+- **Remote transfer (SCP)** with resilient paths (handles trailing slashes)
+- **Smart retention**:
+    - Always keep the **latest 7** backups
+    - Always keep the **first backup of each month** (per year)
+- **Config-driven** (no direct `.env` reads inside the command)
+- **Optional webhook** to a Forge/CI endpoint on success/failure
 
 ---
 
 ## Requirements
 
-|            |                                              |
-|------------|----------------------------------------------|
-| **PHP**    | ≥ 8.1                                        |
-| **Laravel**| ≥ 10                                         |
+|            |                                  |
+|------------|----------------------------------|
+| **PHP**    | ≥ 8.2                            |
+| **Laravel**| 10, 11, or 12                    |
 | **Tools**  | `tar`, `gzip`, `mysqldump`, `scp` in `$PATH` |
 
 ---
@@ -31,6 +35,7 @@
 ```bash
 composer require helios-live/deepstore
 php artisan vendor:publish --tag=deepstore-config
+
 ```
 
 The second command publishes **`config/deepstore.php`** so you can adjust default settings.
