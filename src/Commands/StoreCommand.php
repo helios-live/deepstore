@@ -3,12 +3,12 @@
 namespace HeliosLive\Deepstore\Commands;
 
 use Carbon\Carbon;
-use HeliosLive\Deepstore\MySqlDumper;
-use HeliosLive\Deepstore\StorageCollector;
-use HeliosLive\Deepstore\TarGzArchiver;
-use HeliosLive\Deepstore\ScpTransfer;
-use HeliosLive\Deepstore\BackupRetention;
-use HeliosLive\Deepstore\WebhookNotifier;
+use HeliosLive\Deepstore\Services\MySqlDumper;
+use HeliosLive\Deepstore\Services\ScpTransfer;
+use HeliosLive\Deepstore\Services\TarGzArchiver;
+use HeliosLive\Deepstore\Services\BackupRetention;
+use HeliosLive\Deepstore\Services\WebhookNotifier;
+use HeliosLive\Deepstore\Services\StorageCollector;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
