@@ -1,6 +1,6 @@
 <?php
 
-namespace HeliosLive\Deepstore;
+namespace HeliosLive\Deepstore\Services;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;

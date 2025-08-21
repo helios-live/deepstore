@@ -1,6 +1,6 @@
 <?php
 
-namespace HeliosLive\Deepstore;
+namespace HeliosLive\Deepstore\Services;
 
 use Illuminate\Support\Facades\Process;
 
