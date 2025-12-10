@@ -49,4 +49,82 @@ class ScpTransfer
 
         return Process::run($cmd)->successful();
     }
+    private function enforceRemoteRetention(
+        string $remoteUser,
+        string $remoteHost,
+        string $remotePort,
+        string $sshKey,
+        string $remotePath
+    ): void {
+        $latestToKeep = (int) config('deepstore.retention.latest', 7);
+        $keepFirstOfMonth = (bool) config('deepstore.retention.keep_first_of_month', true);
+        $prefix = (string) config('deepstore.archive_prefix', 'archive_');
+        $dateFormat = (string) config('deepstore.date_format', 'Y-m-d');
+
+        // 1. Fetch remote filenames via SSH
+        $lsCmd = 'ls -1 ' . escapeshellarg($remotePath) . ' 2>/dev/null';
+
+        $ssh = [
+            'ssh',
+            '-p', $remotePort,
+            '-o', 'StrictHostKeyChecking=no',
+            '-o', 'UserKnownHostsFile=/dev/null',
+        ];
+
+        if ($sshKey !== '' && File::exists($sshKey)) {
+            $ssh[] = '-i';
+            $ssh[] = $sshKey;
+        }
+
+        $ssh[] = $remoteUser . '@' . $remoteHost;
+        $ssh[] = $lsCmd;
+
+        $result = Process::run($ssh);
+
+        if ($result->successful() === false) {
+            return;
+        }
+
+        $files = array_filter(
+            explode("\n", trim($result->output())),
+            static fn ($v): bool => $v !== ''
+        );
+
+        // 2. Use BackupRetention to figure out what to delete
+        $retention = new BackupRetention();
+        $toDelete = $retention->enforceOnList(
+            $files,
+            $latestToKeep,
+            $keepFirstOfMonth,
+            $prefix,
+            $dateFormat
+        );
+
+        if ($toDelete === []) {
+            return;
+        }
+
+        // 3. Delete files remotely
+        foreach ($toDelete as $file) {
+            $deleteCmd = 'rm ' . escapeshellarg($remotePath . '/' . $file);
+
+            $del = [
+                'ssh',
+                '-p', $remotePort,
+                '-o', 'StrictHostKeyChecking=no',
+                '-o', 'UserKnownHostsFile=/dev/null',
+            ];
+
+            if ($sshKey !== '' && File::exists($sshKey)) {
+                $del[] = '-i';
+                $del[] = $sshKey;
+            }
+
+            $del[] = $remoteUser . '@' . $remoteHost;
+            $del[] = $deleteCmd;
+
+            Process::run($del);
+        }
+    }
+
 }
