@@ -118,7 +118,7 @@ class BackupRetention
      */
     private function parseArchiveName(string $name, string $prefix, string $dateFormat): ?array
     {
-        $pattern = '/^' . preg_quote($prefix, '/') . '(\d{4}-\d{2}-\d{2})\.tar\.gz$/';
+        $pattern = '/^' . preg_quote($prefix, '/') . '(\d{4}-\d{2}-\d{2})\.(tar\.gz|zip)$/';
 
         if (preg_match($pattern, $name, $matches) !== 1) {
             return null;
@@ -139,7 +139,11 @@ class BackupRetention
     /**
      * Core retention logic shared by both local and remote enforcement.
      *
-     * @param array<int, array{date: \Carbon\Carbon, ym: string}> $files
+     * @param array<int, array<string, mixed>> $files Each element must have:
+     *                                               - 'name' => string
+     *                                               - 'date' => \Carbon\Carbon
+     *                                               - 'ym'   => string (YYYY-MM)
+     *                                               Optionally 'path' for local deletion.
      * @param int $latestToKeep
      * @param bool $keepFirstOfMonth
      * @return array<int, array<string, mixed>>
@@ -158,40 +162,43 @@ class BackupRetention
             static fn (array $a, array $b): int => $b['date'] <=> $a['date']
         );
 
-        $keep = [];
+        $keepNames = [];
 
-        foreach (array_slice($files, 0, max(0, $latestToKeep)) as $file) {
-            $keep[spl_object_hash((object) $file) ?: $file['ym'] . $file['date']->getTimestamp()] = $file;
+        if ($latestToKeep > 0) {
+            foreach (array_slice($files, 0, $latestToKeep) as $file) {
+                $keepNames[$file['name']] = true;
+            }
         }
 
         if ($keepFirstOfMonth) {
+            $byOldest = $files;
+            usort(
+                $byOldest,
+                static fn (array $a, array $b): int => $a['date'] <=> $b['date']
+            );
+
             $firstByMonth = [];
 
-            foreach (array_reverse($files) as $file) {
+            foreach ($byOldest as $file) {
                 if (!isset($firstByMonth[$file['ym']])) {
                     $firstByMonth[$file['ym']] = $file;
                 }
             }
 
             foreach ($firstByMonth as $file) {
-                $keep[spl_object_hash((object) $file) ?: $file['ym'] . $file['date']->getTimestamp()] = $file;
+                $keepNames[$file['name']] = true;
             }
         }
 
-        $keepSet = [];
-        foreach ($keep as $file) {
-            $keepSet[$file['ym'] . $file['date']->getTimestamp()] = true;
-        }
-
-        $delete = [];
+        // 3) Everything not in keepNames is to be deleted
+        $toDelete = [];
 
         foreach ($files as $file) {
-            $key = $file['ym'] . $file['date']->getTimestamp();
-            if (!isset($keepSet[$key])) {
-                $delete[] = $file;
+            if (!isset($keepNames[$file['name']])) {
+                $toDelete[] = $file;
             }
         }
 
-        return $delete;
+        return $toDelete;
     }
 }

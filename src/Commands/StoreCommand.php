@@ -84,15 +84,26 @@ class StoreCommand extends Command
                 File::deleteDirectory($tempDir);
             }
 
+            $backupRetention = new BackupRetention();
+
             if ($archiveCreated) {
-                (new BackupRetention())->enforce(
+                $backupRetention->enforce(
                     $backupBaseDir,
                     (int) config('deepstore.retention.latest', 7),
                     (bool) config('deepstore.retention.keep_first_of_month', true),
                     (string) config('deepstore.archive_prefix', 'archive_'),
                     (string) config('deepstore.date_format', 'Y-m-d')
                 );
+
+                $transfer->enforceRemoteRetention (
+                    (string) config('deepstore.remote_user'),
+                    (string) config('deepstore.remote_host'),
+                    (string) config('deepstore.remote_port'),
+                    (string) config('deepstore.ssh_key_path'),
+                    rtrim((string) config('deepstore.remote_path'), '/')
+                );
             }
+
 
             (new WebhookNotifier())->notify($ok, 'deepstore:store');
         }

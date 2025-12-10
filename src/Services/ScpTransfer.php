@@ -47,9 +47,15 @@ class ScpTransfer
         $cmd[] = $localPath;
         $cmd[] = $destination;
 
-        return Process::run($cmd)->successful();
+        $proccess = Process::run($cmd);
+
+        if ($proccess->failed()) {
+            Log:error('SCP transfer failed: ' . $proccess->errorOutput());
+        }
+
+        return $proccess->successful();
     }
-    private function enforceRemoteRetention(
+    public function enforceRemoteRetention(
         string $remoteUser,
         string $remoteHost,
         string $remotePort,
@@ -81,6 +87,7 @@ class ScpTransfer
 
         $result = Process::run($ssh);
 
+
         if ($result->successful() === false) {
             return;
         }
@@ -103,28 +110,34 @@ class ScpTransfer
         if ($toDelete === []) {
             return;
         }
+        $deleteCmd = 'rm' ;
+
+        $del = [
+            'ssh',
+            '-p', $remotePort,
+            '-o', 'StrictHostKeyChecking=no',
+            '-o', 'UserKnownHostsFile=/dev/null',
+        ];
+
+        if ($sshKey !== '' && File::exists($sshKey)) {
+            $del[] = '-i';
+            $del[] = $sshKey;
+        }
+
+        $del[] = $remoteUser . '@' . $remoteHost;
+        $del[] = $deleteCmd;
 
         // 3. Delete files remotely
+        $filesToDelete = [];
+
         foreach ($toDelete as $file) {
-            $deleteCmd = 'rm ' . escapeshellarg($remotePath . '/' . $file);
-
-            $del = [
-                'ssh',
-                '-p', $remotePort,
-                '-o', 'StrictHostKeyChecking=no',
-                '-o', 'UserKnownHostsFile=/dev/null',
-            ];
-
-            if ($sshKey !== '' && File::exists($sshKey)) {
-                $del[] = '-i';
-                $del[] = $sshKey;
-            }
-
-            $del[] = $remoteUser . '@' . $remoteHost;
-            $del[] = $deleteCmd;
-
-            Process::run($del);
+            $filesToDelete[] = escapeshellarg($remotePath . '/' . $file);
         }
+
+        $del = array_merge($del, $filesToDelete);
+
+        Process::run($del);
+
     }
 
 }
