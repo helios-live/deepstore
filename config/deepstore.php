@@ -41,16 +41,20 @@ return [
     | storage directory make it into the tar.gz.  Lists are provided as
     | comma-separated strings in .env (e.g. "*.jpg,*.png").
     |
-    | “Include” lists act as a whitelist.  If an include list is non-empty,
-    | only the given patterns are copied.  Exclude lists are always honoured.
+    | “Whitelsit” lists act as a whitelist.  If an include list is non-empty,
+    | only the given patterns are copied.  Blacklist lists are always honored.
+    | Included files are added in addition to any files matched by the whitelist.
     |
     */
 
     'include_directories'  => array_filter(explode(',', env('DEEPSTORE_INCLUDE_DIRECTORIES', ''))),
     'exclude_directories'  => array_filter(explode(',', env('DEEPSTORE_EXCLUDE_DIRECTORIES', ''))),
 
+    'whitelist_files'        => array_filter(explode(',', env('DEEPSTORE_WHITELIST_FILES', ''))),
+    'blacklist_files'        => array_filter(explode(',', env('DEEPSTORE_BLACKLIST_FILES', ''))),
     'include_files'        => array_filter(explode(',', env('DEEPSTORE_INCLUDE_FILES', ''))),
-    'exclude_files'        => array_filter(explode(',', env('DEEPSTORE_EXCLUDE_FILES', ''))),
+
+
 
     /*
     |--------------------------------------------------------------------------

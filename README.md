@@ -44,18 +44,24 @@ The second command publishes **`config/deepstore.php`** so you can adjust defaul
 
 ## Configuration
 
-| Key | Description | Default |
-|-----|-------------|---------|
-| `backup_path` | Local directory where archives are written | `storage/app/deepstore` |
-| `remote_*` | SSH host, user, path, port, key for remote copy | — |
-| `include_*` / `exclude_*` | Lists controlling which storage folders, files or DB tables are backed up | — |
-| `forge_webhook_url` | URL that receives a JSON payload after each run | — |
+| Key                           | Description                                                                                                                                              | Default |
+|-------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| `backup_path`                 | Local directory where archives are written                                                                                                               | `storage/app/deepstore` |
+| `remote_*`                    | SSH host, user, path, port, key for remote copy                                                                                                          | — |
+| `include_*` / `exclude_*`     | Lists controlling which storage folders or DB tables are backed up, include means only those will be save, exclude means only those will not be backedup | — |
+| `whitelist_*` / `blacklist_*` | Lists controlling which files filtered by name containing                                                                                                | — |
+| `include_files`               | Lists controlling which files are included regardless                                                                                                    | — |
+| `forge_webhook_url`           | URL that receives a JSON payload after each run                                                                                                          | — |
 
 All list-style options accept **comma-separated strings** in `.env`, e.g.:
 
 ```dotenv
 DEEPSTORE_EXCLUDE_DIRECTORIES=logs,framework/cache
 DEEPSTORE_EXCLUDE_TABLES=failed_jobs,jobs
+DEEPSTORE_INCLUDE_DIRECTORIES=app
+DEEPSTORE_INCLUDE_FILES=story.png
+DEEPSTORE_WHITELIST_FILES=.xml,.jpg,invoices
+DEEPSTORE_BLACKLIST_FILES=.png,laravel
 ```
 
 ---
