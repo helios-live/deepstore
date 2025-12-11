@@ -77,7 +77,7 @@ class StoreCommand extends Command
             $ok = true;
             return Command::SUCCESS;
         } catch (\Throwable $e) {
-            $this->error($e->getMessage());
+            \Log::error('Deepstore backup failed: ' . $e->getMessage());
             return Command::FAILURE;
         } finally {
             if (isset($tempDir) && File::isDirectory($tempDir)) {
